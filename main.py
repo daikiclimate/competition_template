@@ -74,8 +74,8 @@ def main():
 
             t4 = time.time()
             
-            X_train, X_valid = trA[feature_cols] , teA[feature_cols]
-            y_train, y_valid = trA[target_col], teA[target_col]
+            X_train, X_valid = tr[feature_cols] , te[feature_cols]
+            y_train, y_valid = tr[target_col], te[target_col]
 
             print(X_train.shape)
             
@@ -100,8 +100,8 @@ def main():
     #提出用　全データ
     tr, te = utils.make_feature(train, test)
 
-    X_train, X_valid = trA[feature_cols], teA[feature_cols]
-    y_train, y_valid = trA[target_col], teA[target_col]
+    X_train, X_valid = tr[feature_cols], te[feature_cols]
+    y_train, y_valid = tr[target_col], te[target_col]
     print(X_train.shape)
 
     clf = lgb.LGBMClassifier().fit(X_train[feature_cols].fillna(0),y_train)
