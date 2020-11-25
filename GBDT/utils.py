@@ -14,8 +14,10 @@ def make_feature(df_train, df_test):
     #print(len(df))
 
     #modeごとのweaponのcount
-    df = count_x(df)
-
+    tgt_cols = [
+            "",
+            ]
+    # df = count_encodes(df, tgt_cols)
     #target encoding
     tgt_cols = [
             "",
