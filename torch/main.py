@@ -6,6 +6,8 @@ import torch.utils.data as data
 from torchvision import transforms
 from torch.utils.data.dataset import Subset
 
+from sklearn.metrics import accuracy_score as acc
+
 import Model
 
 import os
@@ -35,10 +37,9 @@ def get_config():
 
 def main():
     config = get_config()
-    # config.save_folder = config.save_folder + config.base_model + '/' + 'downsample' + str(config.downsample) + '_' + config.scale + '_Aug' + str(config.augmentation) + '_Align' +str(config.align_size) + '_Cdim'+str(config.reduced_dim)
-
-    # if not os.path.exists(config.save_folder):
-        # os.makedirs(config.save_folder)
+    config.save_folder = config.save_folder + config.base + "/"  
+    if not os.path.exists(config.save_folder):
+        os.makedirs(config.save_folder)
     cuda = True if torch.cuda.is_available() else False
 
     if cuda:
@@ -67,8 +68,8 @@ def main():
     # data_loader_test = data.DataLoader(
     test_datasets(transform = test_transforms)
                                   # )
-    model = Model.build_model(num_classes = 5)
-    print(model)
+    model = Model.build_model(base = config.base, num_classes = confing.num_classes)
+    # print(model)
 
     if not config.no_wandb:
             wandb.init(
@@ -90,11 +91,13 @@ def train_test_split_model(model, trainval_datasets, optim, criterion, config,te
     data_loader_train = data.DataLoader(batch_size = config.batch_size, shuffle = True)
     data_loader_test = data.DataLoader(batch_size = config.batch_size, shuffle = False)
 
-    model.train()
     for epoch in config.epochs:
+        model.train()
         total_loss = 0
-        for id, data in enumerate(train):
+        for id, data in enumerate(data_loader_train):
             X, y = data
+            X = X.cuda()
+            y = y.cuda()
             output = model(X)
             loss = criterion(output, y)
             total_loss += loss.item()
@@ -104,6 +107,25 @@ def train_test_split_model(model, trainval_datasets, optim, criterion, config,te
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        model.eval()
+        with torch.no_grads():
+            labels = []
+            outputs = []
+            for id, data in enumerate(data_loader_test):
+                X, y = data
+                X = X.cuda()
+                output = model(X)
+                outputs.extend(output.cpu().detach.numpy().reshape(-1))
+                labels.extend(y)
+            accuracy = acc(labels, outputs)
+        if accuracy > config.acc_th:
+            torch.save(model.state_dict(), config.save_path + "epoch_"+str(int(accuracy*100)) + ".pth")
+
+
+                
+
+
+
 
 
 

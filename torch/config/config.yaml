@@ -1,2 +1,7 @@
+save_folder : "models/"
+run_name : "test"
+base : "vgg"
 test : 1
 epochs : 50
+num_classes : 5
+acc_th : 0.5
